@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Exception;
 
 class ApiInventoryService
 {
@@ -19,7 +20,7 @@ class ApiInventoryService
      *
      * @return array|null
      */
-    public function fetchInventoryData():JsonResponse|\Exception
+    public function fetchInventoryData() :array|\Exception
     {
         $response = Http::get($this->apiEndpoint);
 

@@ -57,42 +57,47 @@ To set up the project, you can follow the commands outlined below. While I could
    composer install
    ```
 
-2. **Clear the old cache:**
+2. **Setup .env file and it's variables:**
+    
+    ```bash
+    cp .env.example .env
+    ```
+   
+3. **Clear the old cache:**
 
    ```bash
    php artisan clear-compiled
    ```
 
-3. **Recreate the application cache:**
+4. **Recreate the application cache:**
 
    ```bash
    php artisan optimize
    ```
 
-4. **Run database migrations:**
+5. **Run database migrations:**
 
    ```bash
    php artisan migrate --force
    ```
 
-5. **Run the database seeder:**
+6. **Run the database seeder:**
 
    ```bash
-   php artisan db:seed
+   php artisan db:seed 
+   ```
+   or 
+   ```bash
+   php artisan db:seed --class=ProductRuleSeeder
+   php artisan db:seed --class=UserSeeder
    ```
 
-Now, you will run the application locally using two separate terminal windows:
+Now, you will run the application locally:
 
 - **Web server:**
 
    ```bash
    php artisan serve
-   ```
-
-- **Background Worker:**
-
-   ```bash
-   php artisan queue:work
    ```
 
 The web server will be accessible at `localhost:8000` or `http://127.0.0.1:8000/` by default.
