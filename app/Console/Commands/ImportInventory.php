@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use App\Services\ApiInventoryService;
@@ -37,11 +38,20 @@ class ImportInventory extends Command
     // Execute the console command
     public function handle(): void
     {
-        $items = $this->apiInventoryService->fetchInventoryData();
+        try {
+            $items = $this->apiInventoryService->fetchInventoryData();
 
-        foreach ($items as $item) { $this->upsertItem($item); }
+            foreach ($items as $item) { $this->upsertItem($item); }
 
-        $this->info('Inventory import completed successfully.');
+            $this->info('Inventory import completed successfully.');
+
+        } catch (Exception $e) {
+            // Log the error message and show it in the console output
+            \Log::error('Error during inventory import: ' . $e->getMessage());
+
+            // Output error to console
+            $this->error('Failed to import inventory: ' . $e->getMessage());
+        }
     }
 
     private function upsertItem($itemData): void
