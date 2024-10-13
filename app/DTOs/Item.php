@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models\BaseClass;
+namespace App\DTOs;
 
 class Item implements \Stringable
 {

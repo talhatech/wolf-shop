@@ -11,6 +11,7 @@ use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -26,24 +27,35 @@ class ProductController extends Controller
         try {
             $imageFile = $request->file('image');
 
-            //todo: media driver and media library (create polymorphic media table) // CloudinaryService
+            //todo: media library (create polymorphic media table)
 
-            $uploadedImage = Cloudinary::upload($imageFile->getRealPath(), [
-                'public_id' => 'products/' . $product->id.'_product_image',
-                'overwrite' => true, // Overwrite the existing image if it exists
-            ]);
+            $basePath = 'products/';
+            $fileKey = $product->id . '_product_image.' . $imageFile->getClientOriginalExtension();
 
-            //todo: make it more optimized (Separate base path and object key.)
-            $product->image = $uploadedImage->getSecurePath();
-            $product->save();
+            // Combine base path and object key to form the full file path
+            $filePath = $basePath . $fileKey;
 
-            return response()->json([
-                'message' => 'Image uploaded successfully',
-                'data' => ProductResource::make($product),
-            ], 200);
+            // Upload the image to Cloudinary using Storage facade
+            // todo: we can move to file upload in background
+            $uploadedImageUrl = Storage::disk('cloudinary')->put($filePath, file_get_contents($imageFile->getRealPath()));
+
+            // Check if the image was uploaded successfully
+            if ($uploadedImageUrl) {
+
+                $product->attachMedia($request->file('image'));
+                $product->save();
+
+                return response()->json([
+                    'message' => 'Image uploaded successfully',
+                    'data' => ProductResource::make($product),
+                ], 200);
+            }
+
+            return response()->json(['message' => 'Image upload failed'], 500);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Unable to upload image',
+                'message' => $e->getMessage(),
             ], 500); // You can use a different status code like 422 based on your preference
         }
     }

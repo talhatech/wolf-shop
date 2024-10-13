@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\UpdateInventoryItemJob;
 use App\Models\Product;
 use App\Services\WolfService;
 use Illuminate\Console\Command;
 
 class UpdateInventory extends Command
 {
-    private WolfService $wolfService;
     /**
      * The name and signature of the console command.
      *
@@ -24,27 +24,19 @@ class UpdateInventory extends Command
     protected $description = 'Update inventory items daily';
 
     /**
-     * Execute the console command.
-     */
-    public function __construct(WolfService $wolfService)
-    {
-        parent::__construct();
-
-        $this->wolfService = $wolfService;
-    }
+    * Execute the console command.
+    */
 
     public function handle()
     {
-        $products = Product::with('rule')
-        ->where('quality','>', 0)
-        ->get();
+        // Use cursor to stream products and process them in chunks
+        Product::with('rule')
+            ->where('quality', '>', 0)
+            ->chunk(100, function ($products) { // can increase the chunk size.
+                    // Dispatch job for each chunks of products
+                    UpdateInventoryItemJob::dispatch($products);
+            });
 
-
-        foreach ($products as $product) {
-            // Todo: dispatch job with chunk
-            $this->wolfService->updateProduct($product);
-        }
-
-        $this->info('Inventory updated successfully.');
+        $this->info('Inventory update has been queued successfully.');
     }
 }
