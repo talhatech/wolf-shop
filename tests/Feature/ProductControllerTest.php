@@ -29,7 +29,7 @@ class ProductControllerTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonStructure([
                      'data' => [
-                         '*' => ['id', 'name', 'price', 'quality', 'sell_in'],
+                         '*' => ['id', 'name', 'price', 'quality', 'sell_in', 'image'], // Ensure 'image' is included
                      ],
                      'meta',
                      'links',
@@ -52,10 +52,10 @@ class ProductControllerTest extends TestCase
         $product = Product::factory()->create();
 
         // Simulate file upload
-        Storage::fake('images');
+        Storage::fake('cloudinary'); // Ensure we fake the cloudinary disk
         $file = UploadedFile::fake()->image('product.jpg');
 
-        // Send the POST request to update the image
+        // Send the PUT request to update the image
         $response = $this->actingAsAdmin()->putJson("/api/products/{$product->id}", [
             'image' => $file,
         ]);
@@ -69,7 +69,7 @@ class ProductControllerTest extends TestCase
                      ],
                  ]);
 
-        // Assert the image path is set correctly
+        // Refresh the product instance to get updated values
         $this->assertEquals('https://cloudinary.test/path/to/image.jpg', $product->fresh()->image);
     }
 
@@ -87,10 +87,10 @@ class ProductControllerTest extends TestCase
         $product = Product::factory()->create();
 
         // Simulate file upload
-        Storage::fake('images');
+        Storage::fake('cloudinary');
         $file = UploadedFile::fake()->image('product.jpg');
 
-        // Send the POST request
+        // Send the PUT request
         $response = $this->actingAsAdmin()->putJson("/api/products/{$product->id}", [
             'image' => $file,
         ]);
@@ -98,7 +98,7 @@ class ProductControllerTest extends TestCase
         // Assert status and error message
         $response->assertStatus(500)
                  ->assertJson([
-                     'message' => 'Unable to upload image',
+                     'message' => 'Cloudinary error',
                  ]);
     }
 

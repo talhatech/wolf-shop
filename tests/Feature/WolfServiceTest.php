@@ -2,23 +2,28 @@
 
 namespace Tests\Feature;
 
-
 use Tests\TestCase;
-use App\Models\{Product,ProductRule};
-use App\Services\WolfService;
+use App\Models\{Product, ProductRule};
+use App\Services\Wolf\WolfService;
+use App\Repositories\ProductRepository;
 use App\Enums\ProductCategoryEnum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 
 class WolfServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected WolfService $wolfService;
+    protected ProductRepository $productRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->wolfService = new WolfService();
+
+        // Create a mock for the ProductRepository
+        $this->productRepository = Mockery::mock(ProductRepository::class);
+        $this->wolfService = new WolfService($this->productRepository);
     }
 
     public function testUpdateProductNormal()
@@ -35,10 +40,12 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        // Expect the save method to be called
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === 4 && $arg->quality === 9;
+        }));
 
-        $this->assertEquals(4, $product->sell_in);
-        $this->assertEquals(9, $product->quality);
+        $this->wolfService->updateProduct($product);
     }
 
     public function testUpdateProductLegendary()
@@ -55,10 +62,11 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === 4 && $arg->quality === 80; // Legendary items do not change
+        }));
 
-        $this->assertEquals(4, $product->sell_in);
-        $this->assertEquals(80, $product->quality); // Legendary items do not change
+        $this->wolfService->updateProduct($product);
     }
 
     public function testUpdateProductIncreasingWithAge()
@@ -75,10 +83,11 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === 4 && $arg->quality === 49; // Increase by 1
+        }));
 
-        $this->assertEquals(4, $product->sell_in);
-        $this->assertEquals(49, $product->quality); // Increase by 1
+        $this->wolfService->updateProduct($product);
     }
 
     public function testUpdateProductTimeSensitive()
@@ -95,10 +104,11 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === 5 && $arg->quality === 9; // Normal degradation
+        }));
 
-        $this->assertEquals(5, $product->sell_in);
-        $this->assertEquals(9, $product->quality); // Normal degradation
+        $this->wolfService->updateProduct($product);
     }
 
     public function testUpdateProductConjured()
@@ -115,10 +125,11 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === 4 && $arg->quality === 8; // Decreases by 2
+        }));
 
-        $this->assertEquals(4, $product->sell_in);
-        $this->assertEquals(8, $product->quality); // Decreases by 2
+        $this->wolfService->updateProduct($product);
     }
 
     public function testUpdateProductTimeSensitiveQualityDropsToZeroAfterSellInDate()
@@ -135,9 +146,10 @@ class WolfServiceTest extends TestCase
             'rule_id' => $productRule->id,
         ]);
 
-        $this->wolfService->updateProduct($product);
+        $this->productRepository->shouldReceive('save')->once()->with(Mockery::on(function ($arg) use ($product) {
+            return $arg->id === $product->id && $arg->sell_in === -1 && $arg->quality === 0; // Drops to zero
+        }));
 
-        $this->assertEquals(-1, $product->sell_in);
-        $this->assertEquals(0, $product->quality); // Drops to zero
+        $this->wolfService->updateProduct($product);
     }
 }
