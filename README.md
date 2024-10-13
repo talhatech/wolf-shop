@@ -14,39 +14,6 @@ This project manages inventory updates based on specific rules for items with `S
   
 The system is optimized to handle edge cases and new item types while preserving core functionality.
 
-## Folder Structure
-
-- **Commands**
-  - `app/Console/Commands/ImportInventory.php`: Handles the import of inventory data from an external API.
-  - `app/Console/Commands/UpdateInventory.php`: Manages updating the inventory details on a daily basis.
-
-- **Models**
-  - `app/Models/Product.php`: Represents the product entity.
-  - `app/Models/ProductRule.php`: Contains rules for handling products and their quality.
-  - `app/Models/User.php`: User model for authentication and relationships.
-
-- **Services**
-  - `app/Services/ApiInventoryService.php`: Service for fetching inventory data from an API.
-  - `app/Services/WolfService.php`: Core logic for managing and updating the inventory.
-
-- **Controller**
-  - `app/Http/Controllers/ProductController.php`: Manages product-related requests and CRUD operations.
-  - `app/Http/Requests/ProductRequest.php`: Validation logic for product data submission.
-  - `app/Http/Resources/ProductResource.php`: Transforms product data for API responses.
-
-- **Enums**
-  - `app/Enums/ProductCategoryEnum.php`: Enum class for categorizing products (e.g., legendary, conjured, time-sensitive).
-
-- **GitHub CI/CD**
-  - `deploy-dev.yml`: GitHub Actions configuration for continuous integration and deployment.
-
-- **Unit Tests**
-  - `tests/Feature/ProductControllerTest.php`: Tests for the `ProductController` methods.
-  - `tests/Feature/WolfServiceTest.php`: Tests for the `WolfService` logic.
-
-This structure ensures a clean separation of logic, facilitating easy testing, maintenance, and scalability.
-
-
 ## Installation
 
 To set up the project, you can follow the commands outlined below. While I could have written a `script.sh` or `docker-compose.yml` for automated execution, I opted to provide the commands directly due to time constraints.
@@ -98,6 +65,12 @@ Now, you will run the application locally:
 
    ```bash
    php artisan serve
+   ```
+
+- **Processes Jobs:**
+
+   ```bash
+   php artisan queue:work
    ```
 
 The web server will be accessible at `localhost:8000` or `http://127.0.0.1:8000/` by default.
