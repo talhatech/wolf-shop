@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\UpdateInventoryItemJob;
 use App\Models\Product;
-use App\Services\WolfService;
+use App\Services\Wolf\WolfService;
 use Illuminate\Console\Command;
+use App\Jobs\UpdateInventoryItemJob;
 
 class UpdateInventory extends Command
 {
@@ -27,14 +27,16 @@ class UpdateInventory extends Command
     * Execute the console command.
     */
 
+
     public function handle()
     {
+        $wolfService = app(WolfService::class);
         // Use cursor to stream products and process them in chunks
         Product::with('rule')
             ->where('quality', '>', 0)
-            ->chunk(100, function ($products) { // can increase the chunk size.
+            ->chunk(100, function ($products) use ($wolfService) { // can increase the chunk size.
                     // Dispatch job for each chunks of products
-                    UpdateInventoryItemJob::dispatch($products);
+                    UpdateInventoryItemJob::dispatch($products, $wolfService);
             });
 
         $this->info('Inventory update has been queued successfully.');

@@ -12,7 +12,6 @@ class ProductRequest extends BaseRequest
      */
     public function updateRules(): array
     {
-        // dd('here');
         return [
             'image' => 'required|image|max:10240|mimes:jpeg,png,jpg,gif,svg', // 10MB max size
         ];

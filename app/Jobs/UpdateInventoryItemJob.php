@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Services\WolfService;
+use App\Services\Wolf\WolfService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,10 +22,10 @@ class UpdateInventoryItemJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $products)
+    public function __construct(Collection $products, WolfService $wolfService)
     {
         $this->products = $products;
-        $this->wolfService = new WolfService();
+        $this->wolfService = $wolfService;
     }
 
     /**im
